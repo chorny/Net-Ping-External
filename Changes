@@ -1,5 +1,9 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.07: Sep 27 2001 
+- Added support for Mac OS X (darwin) and fixed support for Win NT.
+(Thanks to Randy Moore for the fix.)
+
 0.06: Apr 25 2001
 - Added support for a fair number of new platforms.
 

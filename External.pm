@@ -1,6 +1,7 @@
 package Net::Ping::External;
 
 # Author:   Colin McMillen (colinm@cpan.org)
+# Thanks to Randy Moore for fixes to _ping_win32.
 #
 # Copyright (c) 2001 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
@@ -11,7 +12,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.06";
+$VERSION = "0.07";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -39,6 +40,7 @@ sub ping {
      hpux     => \&_ping_hpux,
      dec_osf  => \&_ping_dec_osf,
      bsd      => \&_ping_bsd,
+     darwin   => \&_ping_unix,
      openbsd  => \&_ping_unix,
      freebsd  => \&_ping_unix,
      next     => \&_ping_next,
@@ -57,14 +59,13 @@ sub ping {
 
 # Win32 is the only system so far for which we actually need to parse the
 # results of the system ping command.
-
 sub _ping_win32 {
   my %args = @_;
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   print "$command\n" if $DEBUG;
   my $result = `$command`;
-  return 1 if $result =~ /\(0% loss\)/i;
+  return 1 if $result =~ /Reply/i;
   return 0;
 }
 
@@ -287,7 +288,10 @@ Default value: 56.
 =head2 SUPPORTED PLATFORMS
 
 Support currently exists for interfacing with the standard ping
-utilities on the following systems:
+utilities on the following systems. Please note that the path to the `ping'
+should be somewhere in your PATH environment variable (or your system's
+closest equivalent thereof.) Otherwise, Net::Ping::External will be unable
+to locate your system's `ping' command.
 
 =over 4
 
@@ -353,8 +357,19 @@ Colin McMillen (colinm@cpan.org)
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
+=head1 CREDITS
+
+Dan Moore contributed command-line options and code for NeXT, BeOS,
+HP-UX, and BSD/OS.
+
+Jarkko Hietaniemi contributed a huge list of command-line options and results
+for the `ping' command on 9 different systems.
+
 =head1 SEE ALSO
 
 Net::Ping
 
 =cut
+
+
+

@@ -22,9 +22,8 @@ print "ok 1\n";
 	       2 => "ping(host => '127.0.0.1')",
 	       3 => "ping(host => '127.0.0.1', timeout => 5)",
 	       4 => "ping(host => 'some.non.existent.host')",
-	       5 => "ping(host => '10.252.253.254')",
-	       6 => "ping(host => '127.0.0.1', count => 10)",
-	       7 => "ping(host => '127.0.0.1', size => 32)"
+	       5 => "ping(host => '127.0.0.1', count => 10)",
+	       6 => "ping(host => '127.0.0.1', size => 32)"
 	      );
 
 @passed = ();
@@ -62,8 +61,8 @@ else {
   push @failed, 4;
 }
 
-eval { $ret = ping(host => '10.252.253.254') };
-if (!$@ && !$ret) {
+eval { $ret = ping(host => '127.0.0.1', count => 2) };
+if (!$@ && $ret) {
   print "ok 5\n";
   push @passed, 5;
 }
@@ -72,7 +71,7 @@ else {
   push @failed, 5;
 }
 
-eval { $ret = ping(host => '127.0.0.1', count => 2) };
+eval { $ret = ping(host => '127.0.0.1', size => 32) };
 if (!$@ && $ret) {
   print "ok 6\n";
   push @passed, 6;
@@ -80,16 +79,6 @@ if (!$@ && $ret) {
 else {
   print "not ok 6\n";
   push @failed, 6;
-}
-
-eval { $ret = ping(host => '127.0.0.1', size => 32) };
-if (!$@ && $ret) {
-  print "ok 7\n";
-  push @passed, 7;
-}
-else {
-  print "not ok 7\n";
-  push @failed, 7;
 }
 
 print "\nRunning a more verbose test suite.";

@@ -6,16 +6,15 @@ package Net::Ping::External;
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
 
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG);
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.05";
+$VERSION = "0.06";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
-$DEBUG = 0;
 
 sub ping {
   # Set up defaults & override defaults with parameters sent.
@@ -32,14 +31,21 @@ sub ping {
   $args{timeout} = 5 unless defined $args{timeout} && $args{timeout} > 0;
 
   my %dispatch = 
-    (linux   => \&_ping_linux,
-     mswin32 => \&_ping_win32,
-     solaris => \&_ping_solaris,
-     openbsd => \&_ping_unix,
-     freebsd => \&_ping_unix,
-     netbsd  => \&_ping_unix,
-     irix    => \&_ping_unix,
-     aix     => \&_ping_unix,
+    (linux    => \&_ping_linux,
+     mswin32  => \&_ping_win32,
+     solaris  => \&_ping_solaris,
+     bsdos    => \&_ping_bsdos,
+     beos     => \&_ping_beos,
+     hpux     => \&_ping_hpux,
+     dec_osf  => \&_ping_dec_osf,
+     bsd      => \&_ping_bsd,
+     openbsd  => \&_ping_unix,
+     freebsd  => \&_ping_unix,
+     next     => \&_ping_next,
+     unicosmk => \&_ping_unicosmk,
+     netbsd   => \&_ping_unix,
+     irix     => \&_ping_unix,
+     aix      => \&_ping_aix,
     );
 
   my $subref = $dispatch{lc $^O};
@@ -72,7 +78,6 @@ sub _ping_system {
      ) = @_;
   my $devnull = "/dev/null";
   $command .= " 1>$devnull 2>$devnull";
-  print "$command\n" if $DEBUG;
   my $exit_status = system($command) >> 8;
   return 1 if $exit_status == $success;
   return 0;
@@ -81,29 +86,85 @@ sub _ping_system {
 # Below are all the systems on which _ping_system() has been tested
 # and found OK.
 
+# Assumed OK for DEC OSF
+sub _ping_dec_osf {
+  my %args = @_;
+  my $command = "ping -c $args{count} -s $args{size} -q -u $args{host}";
+  return _ping_system($command, 0);
+}
+
+# Assumed OK for unicosmk
+sub _ping_unicosmk {
+  my %args = @_;
+  my $command = "ping -s $args{size} -c $args{count} $args{host}";
+  return _ping_system($command, 0);
+}
+
+# NeXTStep 3.3/sparc
+sub _ping_next {
+  my %args = @_;
+  my $command = "ping $args{host} $args{size} $args{count}";
+  return _ping_system($command, 0);
+}
+
+# Assumed OK for HP-UX.
+sub _ping_hpux {
+  my %args = @_;
+  my $command = "ping $args{host} $args{size} $args{count}";
+  return _ping_system($command, 0);
+}
+
+# Assumed OK for BSD/OS 4.
+sub _ping_bsdos {
+  my %args = @_;
+  my $command = "ping -c $args{count} -s $args{size} $args{host}";
+  return _ping_system($command, 0);
+}
+
+# Assumed OK for BeOS.
+sub _ping_beos {
+  my %args = @_;
+  my $command = "ping -c $args{count} -s $args{size} $args{host}";
+  return _ping_system($command, 0);
+}
+
+# Assumed OK for AIX
+sub _ping_aix {
+  my %args = @_;
+  my $command = "ping -c $args{count} -s $args{size} -q $args{host}";
+  return _ping_system($command, 0);
+}
+
 # OpenBSD 2.7 OK, IRIX 6.5 OK
-# Assumed OK for NetBSD, FreeBSD, and AIX, but needs testing
+# Assumed OK for NetBSD & FreeBSD, but needs testing
 sub _ping_unix {
   my %args = @_;
   my $command = "ping -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 
+# Assumed OK for FreeBSD 3.4
+# -s size option supported -- superuser only... fixme
+sub _ping_bsd {
+  my %args = @_;
+  my $command = "ping -c $args{count} -q $args{hostname}";
+}
+
 # Debian 2.2 OK, RedHat 6.2 OK
+# -s size option available to superuser... fixme?
 sub _ping_linux {
   my %args = @_;
-  my $command = "ping -s $args{size} -c $args{count} $args{host}";
+  my $command = "ping -c $args{count} $args{host}";
   return _ping_system($command, 0);
 }
 
 # Solaris 2.6, 2.7 OK
-#
-# FIXME: support for more options?
 sub _ping_solaris {
   my %args = @_;
-  my $command = "ping $args{host} $args{timeout}";
+  my $command = "ping -s $args{host} $args{size} $args{timeout}";
   return _ping_system($command, 0);
 }
+
 
 1;
 
@@ -177,45 +238,7 @@ it that works on many systems.
 
 =back
 
-Support currently exists for interfacing with the standard ping
-utilities on the following systems:
-
-=over 4
-
-=item * Win32
-
-Tested OK on Win98. It should work on other Windows systems as well.
-
-=item * Linux
-
-Tested OK on Debian 2.2 and Redhat 6.2, although Linux ping appears not to
-support the "timeout" option. If you are using this module on
-a different flavor of Linux, please test it and let me know of the results.
-
-=item * BSD
-
-Tested OK on OpenBSD 2.7. Needs testing for FreeBSD, NetBSD, and BSDi.
-
-=item * Solaris
-
-Tested OK on Solaris 2.6 and 2.7.
-
-=item * IRIX
-
-Tested OK on IRIX 6.5.
-
-=item * AIX
-
-I have been informed that this module should work on AIX as well. No
-official test results yet.
-
-=back
-
-More systems will be added as soon as any users request them. If your
-system is not currently supported, e-mail me; adding support to your
-system is probably trivial.
-
-=head2 ping() options
+=head2 ping() OPTIONS
 
 This module is still "alpha"; it is expected that more options to the C<ping()>
 function will be added soon.
@@ -260,6 +283,51 @@ the 8 bytes of ICMP header data.
 Default value: 56.
 
 =back
+
+=head2 SUPPORTED PLATFORMS
+
+Support currently exists for interfacing with the standard ping
+utilities on the following systems:
+
+=over 4
+
+=item * Win32
+
+Tested OK on Win98. It should work on other Windows systems as well.
+
+=item * Linux
+
+Tested OK on Debian 2.2 and Redhat 6.2. It appears that different versions
+of Linux use different versions of ping, which support different options.
+Not sure how I'm going to resolve this yet; for now, all the options but
+C<count> are disabled.
+
+=item * BSD
+
+Tested OK on OpenBSD 2.7. Needs testing for FreeBSD, NetBSD, and BSDi.
+
+=item * Solaris
+
+Tested OK on Solaris 2.6 and 2.7.
+
+=item * IRIX
+
+Tested OK on IRIX 6.5.
+
+=item * AIX, DEC OSF, UNICOSMK, NeXTStep, HP-UX, BSD/OS (BSDi), BeOS
+
+Support for these systems is integrated into this module but none have been
+tested yet. If you have successful or unsuccessful test results for any of
+these systems, please send them to me. On some of these systems, some of the
+arguments may not be supported. If you'd like to see better support on your
+system, please e-mail me.
+
+=back
+
+More systems will be added as soon as any users request them. If your
+system is not currently supported, e-mail me; adding support to your
+system is probably trivial.
+
 
 =head1 BUGS
 

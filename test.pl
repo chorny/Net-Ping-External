@@ -111,13 +111,15 @@ if (@failed) {
   }
 }
 
-print "Email this bit to colinm\@cpan.org to help further the development of Net::Ping::External:";
-print "Operating system according to perl: ", $^O, "\n";
-print "Operating system according to `uname -a`:\n";
+print "\nOperating system according to perl: ", $^O, "\n";
+print "Operating system according to `uname -a` (if available):\n";
 print `uname -a`;
-print "Perl version:\n";
+print "Perl version: ";
 @output = `perl -v`;
 print @output[1..1];
-print "Press enter to continue: ";
+print "-------------------------------------------------\n";
+print "If you would like to further the development of Net::Ping::External, please\n";
+print "e-mail the bits between the dashed lines to colinm\@cpan.org. Thanks!\n";
+print "\nPress enter to continue: ";
 <STDIN>;
 

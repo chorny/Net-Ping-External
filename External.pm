@@ -12,7 +12,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -43,7 +43,7 @@ sub ping {
      bsd      => \&_ping_bsd,
      darwin   => \&_ping_unix,
      openbsd  => \&_ping_unix,
-     freebsd  => \&_ping_unix,
+     freebsd  => \&_ping_freebsd,
      next     => \&_ping_next,
      unicosmk => \&_ping_unicosmk,
      netbsd   => \&_ping_unix,
@@ -66,7 +66,7 @@ sub _ping_win32 {
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   print "$command\n" if $DEBUG;
   my $result = `$command`;
-  return 1 if $result =~ /Reply/i;
+  return 1 if $result =~ /time?\d*ms/;
   return 0;
 }
 
@@ -153,7 +153,7 @@ sub _ping_bsd {
 }
 
 # Debian 2.2 OK, RedHat 6.2 OK
-# -s size option available to superuser... fixme?
+# -s size option available to superuser... FIXME?
 sub _ping_linux {
   my %args = @_;
   my $command = "ping -c $args{count} $args{host}";
@@ -167,6 +167,14 @@ sub _ping_solaris {
   return _ping_system($command, 0);
 }
 
+# FreeBSD. Tested OK for Freebsd 4.3
+# -s size option supported -- superuser only... FIXME?
+# -w timeout option for BSD replaced by -t
+sub _ping_freebsd {
+  my %args = @_;
+  my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+  return _ping_system($command, 0);
+}
 
 1;
 

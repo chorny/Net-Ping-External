@@ -6,22 +6,20 @@ package Net::Ping::External;
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
 
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG);
 use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.04";
+$VERSION = "0.05";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
+$DEBUG = 0;
 
 sub ping {
-  # Set up defaults.
-  my %args = (count => 1, size => 56);
-
-  # Override defaults with the parameters sent.
-  %args = @_;
+  # Set up defaults & override defaults with parameters sent.
+  my %args = (count => 1, size => 56, @_);
 
   # "host" and "hostname" are synonyms.
   $args{host} = $args{hostname} if defined $args{hostname};
@@ -58,6 +56,7 @@ sub _ping_win32 {
   my %args = @_;
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
+  print "$command\n" if $DEBUG;
   my $result = `$command`;
   return 1 if $result =~ /\(0% loss\)/i;
   return 0;
@@ -73,6 +72,7 @@ sub _ping_system {
      ) = @_;
   my $devnull = "/dev/null";
   $command .= " 1>$devnull 2>$devnull";
+  print "$command\n" if $DEBUG;
   my $exit_status = system($command) >> 8;
   return 1 if $exit_status == $success;
   return 0;

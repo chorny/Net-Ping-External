@@ -12,7 +12,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.07";
+$VERSION = "0.08";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -34,6 +34,7 @@ sub ping {
   my %dispatch = 
     (linux    => \&_ping_linux,
      mswin32  => \&_ping_win32,
+     cygwin   => \&_ping_win32,
      solaris  => \&_ping_solaris,
      bsdos    => \&_ping_bsdos,
      beos     => \&_ping_beos,

@@ -1,5 +1,9 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.03: Mar 23 2001
+- Removed "use warnings" and "use strict" directives. Should still work
+  under warnings and strict, however.
+
 0.02: Mar 21 2001
 - Added "ip" option to the ping() function.
 - Fixed MANIFEST file.

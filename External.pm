@@ -6,14 +6,12 @@ package Net::Ping::External;
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
 
-use warnings;
-use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.02";
+$VERSION = "0.03";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);

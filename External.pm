@@ -11,13 +11,17 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.03";
+$VERSION = "0.04";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
 
 sub ping {
-  my %args = @_;
+  # Set up defaults.
+  my %args = (count => 1, size => 56);
+
+  # Override defaults with the parameters sent.
+  %args = @_;
 
   # "host" and "hostname" are synonyms.
   $args{host} = $args{hostname} if defined $args{hostname};
@@ -44,15 +48,16 @@ sub ping {
 
   croak("External ping not supported on your system") unless $subref;
 
-  return $subref->($args{host}, $args{timeout});
+  return $subref->(%args);
 }
 
 # Win32 is the only system so far for which we actually need to parse the
 # results of the system ping command.
+
 sub _ping_win32 {
-  my ($hostname, $timeout) = @_;
-  $timeout *= 1000;    # Win32 ping timeout is specified in milliseconds
-  my $command = "ping -n 1 -w $timeout $hostname";
+  my %args = @_;
+  $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
+  my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   my $result = `$command`;
   return 1 if $result =~ /\(0% loss\)/i;
   return 0;
@@ -79,22 +84,24 @@ sub _ping_system {
 # OpenBSD 2.7 OK, IRIX 6.5 OK
 # Assumed OK for NetBSD, FreeBSD, and AIX, but needs testing
 sub _ping_unix {
-  my ($hostname, $timeout) = @_;
-  my $command = "ping -c 1 -w $timeout $hostname";
+  my %args = @_;
+  my $command = "ping -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 
 # Debian 2.2 OK, RedHat 6.2 OK
 sub _ping_linux {
-  my ($hostname, $timeout) = @_;
-  my $command = "ping -c 1 $hostname";
+  my %args = @_;
+  my $command = "ping -s $args{size} -c $args{count} $args{host}";
   return _ping_system($command, 0);
 }
 
 # Solaris 2.6, 2.7 OK
+#
+# FIXME: support for more options?
 sub _ping_solaris {
-  my ($hostname, $timeout) = @_;
-  my $command = "ping $hostname $timeout";
+  my %args = @_;
+  my $command = "ping $args{host} $args{timeout}";
   return _ping_system($command, 0);
 }
 
@@ -130,6 +137,9 @@ Some examples:
     $num_alive++;
   }
   print "$num_alive hosts are alive.\n";
+
+  # Using all the fancy options:
+  ping(hostname => "127.0.0.1", count => 5, size => 1024, timeout => 3);
 
 =head1 DESCRIPTION
 
@@ -233,6 +243,22 @@ will return false.
 
 Default value: 5.
 
+=item * C<count>
+
+The number of ICMP ping packets to send to the remote host. Eventually,
+Net::Ping::External will return the number of packets that were acknowledged
+by the remote host; for now, however, C<ping()> still returns just true or false.
+
+Default value: 1.
+
+=item * C<size>
+
+Specifies the number of data bytes to be sent.  The default is
+56, which translates into 64 ICMP data bytes when combined with
+the 8 bytes of ICMP header data.
+
+Default value: 56.
+
 =back
 
 =head1 BUGS
@@ -264,6 +290,3 @@ modify it under the same terms as Perl itself.
 Net::Ping
 
 =cut
-
-
-

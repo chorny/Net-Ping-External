@@ -1,5 +1,8 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.04: Apr 20 2001
+- Added "count" and "size" options.
+
 0.03: Mar 23 2001
 - Removed "use warnings" and "use strict" directives. Should still work
   under warnings and strict, however.

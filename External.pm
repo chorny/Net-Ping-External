@@ -1,7 +1,7 @@
 package Net::Ping::External;
 
 # Author:   Colin McMillen (colinm@cpan.org)
-# Thanks to Randy Moore for fixes to _ping_win32.
+# See also the CREDITS section in the POD below.
 #
 # Copyright (c) 2001 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
@@ -12,7 +12,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.09";
+$VERSION = "0.10";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -171,9 +171,9 @@ sub _ping_solaris {
 # -s size option supported -- superuser only... FIXME?
 # -w timeout option for BSD replaced by -t
 sub _ping_freebsd {
-  my %args = @_;
-  my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
-  return _ping_system($command, 0);
+    my %args = @_;
+    my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+    return _ping_system($command, 0);
 }
 
 1;
@@ -373,6 +373,13 @@ HP-UX, and BSD/OS.
 
 Jarkko Hietaniemi contributed a huge list of command-line options and results
 for the `ping' command on 9 different systems.
+
+Randy Moore contributed several patches for Win32 support.
+
+Marc-Andre Dumas contributed a patch for FreeBSD support.
+
+Jonathan Stowe fixed a bug in 0.09 that prevented the module from
+running on some systems.
 
 =head1 SEE ALSO
 

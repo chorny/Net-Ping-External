@@ -1,16 +1,21 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.10: Nov 10 2001
+- Fixed unrecognized characters in _ping_freebsd that caused the
+  module to die on some systems. (Thanks to Jonathan Stowe for the
+  patch.)
+
 0.09: Nov 10 2001
 - Some additions and revisions to POD documentation.
 - Further fixes to Win32 support, by Randy Moore.
-- Fixes for FreeBSD support, by Marc-André Dumas.
+- Fixes for FreeBSD support, by Marc-Andre Dumas.
 
 0.08: Sep 30 2001
 - Added support for cygwin port of perl, thanks to Alexei Gretchaninov.
 
 0.07: Sep 27 2001 
 - Added support for Mac OS X (darwin) and fixed support for Win NT.
-(Thanks to Randy Moore for the fix.)
+  (Thanks to Randy Moore for the fix.)
 
 0.06: Apr 25 2001
 - Added support for a fair number of new platforms.

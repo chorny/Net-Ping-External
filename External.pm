@@ -3,7 +3,7 @@ package Net::Ping::External;
 # Author:   Colin McMillen (colinm@cpan.org)
 # See also the CREDITS section in the POD below.
 #
-# Copyright (c) 2001 Colin McMillen.  All rights reserved.  This
+# Copyright (c) 2003 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
 
@@ -12,7 +12,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.10";
+$VERSION = "0.11";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -41,7 +41,7 @@ sub ping {
      hpux     => \&_ping_hpux,
      dec_osf  => \&_ping_dec_osf,
      bsd      => \&_ping_bsd,
-     darwin   => \&_ping_unix,
+     darwin   => \&_ping_darwin,
      openbsd  => \&_ping_unix,
      freebsd  => \&_ping_freebsd,
      next     => \&_ping_next,
@@ -66,7 +66,7 @@ sub _ping_win32 {
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   print "$command\n" if $DEBUG;
   my $result = `$command`;
-  return 1 if $result =~ /time?\d*ms/;
+  return 1 if $result =~ /time.*ms/;
   return 0;
 }
 
@@ -87,6 +87,21 @@ sub _ping_system {
 
 # Below are all the systems on which _ping_system() has been tested
 # and found OK.
+
+# Mac OS X 10.2 ping does not handle -w timeout now does it return a
+# status code if it fails to ping (unless it cannot resolve the domain 
+# name)
+# Thanks to Peter N. Lewis for this one.
+sub _ping_darwin {
+   my %args = @_;
+   my $command = "ping -s $args{size} -c $args{count} $args{host}";
+   my $devnull = "/dev/null";
+   $command .= " 2>$devnull";
+   print "$command\n" if $DEBUG;
+   my $result = `$command`;
+   return 1 if $result =~ /(\d+) packets received/ && $1 > 0;
+   return 0;
+}
 
 # Assumed OK for DEC OSF
 sub _ping_dec_osf {
@@ -150,6 +165,7 @@ sub _ping_unix {
 sub _ping_bsd {
   my %args = @_;
   my $command = "ping -c $args{count} -q $args{hostname}";
+  return _ping_system($command, 0);
 }
 
 # Debian 2.2 OK, RedHat 6.2 OK
@@ -380,6 +396,11 @@ Marc-Andre Dumas contributed a patch for FreeBSD support.
 
 Jonathan Stowe fixed a bug in 0.09 that prevented the module from
 running on some systems.
+
+Numerous people sent in a patch to fix a bug in 0.10 that broke ping on Windown systems.
+
+Peter N. Lewis contributed a patch that works correctly on Mac OS X
+10.2 (and hopefully other versions as well).
 
 =head1 SEE ALSO
 

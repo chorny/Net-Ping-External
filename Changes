@@ -1,5 +1,17 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.11: Feb 11 2003
+- Fixed a problem that caused incorrect results in a lot of (and perhaps 
+  all?) versions of Windows.  
+- Also fixed the _ping_bsd function to actually call ping and return a 
+  value (oops).
+- Peter N. Lewis submitted a _ping_darwin function that will hopefully 
+  work on all versions of Mac OS X.
+- Changed the test suite to only implore people to send me test results 
+  if there were any failures.
+- Test suite can now run non-interactively, as it doesn't prompt the 
+  user to hit enter.
+
 0.10: Nov 10 2001
 - Fixed unrecognized characters in _ping_freebsd that caused the
   module to die on some systems. (Thanks to Jonathan Stowe for the

@@ -107,8 +107,8 @@ print "Perl version: ";
 @output = `perl -v`;
 print @output[1..1];
 print "-------------------------------------------------\n";
-print "If you would like to further the development of Net::Ping::External, please\n";
-print "e-mail the bits between the dashed lines to colinm\@cpan.org. Thanks!\n";
-print "\nPress enter to continue: ";
-<STDIN>;
+print "If any of the above tests failed, please e-mail the bits between the dashed\n";
+print "lines to colinm\@cpan.org. This will help me in fixing this code for maximum\n";
+print "portability to your platform. Thanks!\n";
+
 

@@ -10,9 +10,10 @@ use warnings;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 use Carp;
+use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -20,7 +21,13 @@ $VERSION = "0.01";
 sub ping {
   my %args = @_;
 
+  # "host" and "hostname" are synonyms.
   $args{host} = $args{hostname} if defined $args{hostname};
+
+  # If we have an "ip" argument, convert it to a hostname and use that.
+  $args{host} = inet_ntoa($args{ip}) if defined $args{ip};
+
+  # croak() if no hostname was provided.
   croak("You must provide a hostname") unless defined $args{host};
   $args{timeout} = 5 unless defined $args{timeout} && $args{timeout} > 0;
 
@@ -210,9 +217,15 @@ function will be added soon.
 =item * C<host, hostname>
 
 The hostname (or dotted-quad IP address) of the remote host you are trying
-to ping. This is the only required option.
+to ping. You must specify either the "hostname" option or the "ip" option.
 
 "host" and "hostname" are synonymous.
+
+=item * C<ip>
+
+A packed bit-string representing the 4-byte packed IP address (as
+returned by C<Socket.pm>'s C<inet_aton()> function) of the host that you
+would like to ping.
 
 =item * C<timeout>
 

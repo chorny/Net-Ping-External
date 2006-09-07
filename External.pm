@@ -1,18 +1,20 @@
 package Net::Ping::External;
 
-# Author:   Colin McMillen (colinm@cpan.org)
+# Author:   Colin McMillen (colinm AT cpan.org)
 # See also the CREDITS section in the POD below.
 #
-# Copyright (c) 2003 Colin McMillen.  All rights reserved.  This
+# Copyright (c) 2001-2003 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
+# Copyright (c) 2006 Alexandr Ciornii
 
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use strict;
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG);
 use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.11";
+$VERSION = "0.12_01";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -34,7 +36,7 @@ sub ping {
   my %dispatch = 
     (linux    => \&_ping_linux,
      mswin32  => \&_ping_win32,
-     cygwin   => \&_ping_win32,
+     cygwin   => \&_ping_cygwin,
      solaris  => \&_ping_solaris,
      bsdos    => \&_ping_bsdos,
      beos     => \&_ping_beos,
@@ -67,6 +69,9 @@ sub _ping_win32 {
   print "$command\n" if $DEBUG;
   my $result = `$command`;
   return 1 if $result =~ /time.*ms/;
+  return 1 if $result =~ /TTL/;
+  return 1 if $result =~ /is alive/; # ppt (from CPAN) ping
+#  return 1 if $result !~ /\(100%/; # 100% packages lost
   return 0;
 }
 
@@ -80,6 +85,7 @@ sub _ping_system {
      ) = @_;
   my $devnull = "/dev/null";
   $command .= " 1>$devnull 2>$devnull";
+  print "#$command\n" if $DEBUG;
   my $exit_status = system($command) >> 8;
   return 1 if $exit_status == $success;
   return 0;
@@ -191,6 +197,15 @@ sub _ping_freebsd {
     my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
     return _ping_system($command, 0);
 }
+
+#No timeout
+#Usage:  ping [-dfqrv] host [packetsize [count [preload]]]
+sub _ping_cygwin {
+  my %args = @_;
+  my $command = "ping $args{host} $args{size} $args{count}";
+  return _ping_system($command, 0);
+}
+#Problem is that we may be running windows ping
 
 1;
 
@@ -322,7 +337,12 @@ to locate your system's `ping' command.
 
 =item * Win32
 
-Tested OK on Win98. It should work on other Windows systems as well.
+Tested OK on Win98, Win XP. It should work on other Windows systems as well.
+
+=item * Cygwin
+
+Tested OK on Cygwin 1.5.21. Problem is that we may be running windows ping.
+They have different options.
 
 =item * Linux
 
@@ -333,7 +353,7 @@ C<count> are disabled.
 
 =item * BSD
 
-Tested OK on OpenBSD 2.7. Needs testing for FreeBSD, NetBSD, and BSDi.
+Tested OK on OpenBSD 2.7 and 3.0, Netbsd 1.5.3, Freebsd 4.6.2, 5.4. Needs testing for BSDi.
 
 =item * Solaris
 
@@ -377,7 +397,7 @@ Beware Greeks bearing gifts.
 
 =head1 AUTHOR
 
-Colin McMillen (colinm@cpan.org)
+Alexandr Ciornii (alexchorny AT gmail.com), Colin McMillen (colinm AT cpan.org)
 
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -1,5 +1,12 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.12_01: Sep 07 2006
+Alexandr Ciornii appointed as comaintainer by CPAN admins
+- Updates e-mails to point to me.
+- Fixed ping for Cygwin, national Windows and ppt
+- Added more information for report
+- test.pl returns correct exit code
+
 0.11: Feb 11 2003
 - Fixed a problem that caused incorrect results in a lot of (and perhaps 
   all?) versions of Windows.  

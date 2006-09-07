@@ -31,7 +31,7 @@ print "ok 1\n";
 push @passed, 1 if $loaded;
 push @failed, 1 unless $loaded;
 
-eval{ $ret = ping(host => '127.0.0.1') };
+eval { $ret = ping(host => '127.0.0.1') };
 if (!$@ && $ret) {
   print "ok 2\n";
   push @passed, 2;
@@ -100,15 +100,23 @@ if (@failed) {
   }
 }
 
-print "\nOperating system according to perl: ", $^O, "\n";
-print "Operating system according to `uname -a` (if available):\n";
-print `uname -a`;
-print "Perl version: ";
-@output = `perl -v`;
-print @output[1..1];
+my @output = `perl -v`;
+my $a='';
+$a.= "\nOperating system according to perl: ", $^O, "\n";
+$a.= "Operating system according to `uname -a` (if available):\n";
+$a.= `uname -a`;
+$a.= "Perl version: ";
+$a.= @output[1..1];
+$a.= "Ping help: ";
+$a.= `ping`;
+open A,'>NPE.out';
+print A $a;
+print $a;
 print "-------------------------------------------------\n";
 print "If any of the above tests failed, please e-mail the bits between the dashed\n";
-print "lines to colinm\@cpan.org. This will help me in fixing this code for maximum\n";
-print "portability to your platform. Thanks!\n";
+print "lines or content of NPE.out to alexchorny AT gmail.com This will help me in fixing this\n";
+print "code for maximum portability to your platform. Thanks!\n";
 
+print "\nTests: ".(@failed?"fail":"ok")."\n";
+exit (@failed?1:0);
 

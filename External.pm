@@ -14,7 +14,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.12_01";
+$VERSION = "0.12_02";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -48,7 +48,7 @@ sub ping {
      freebsd  => \&_ping_freebsd,
      next     => \&_ping_next,
      unicosmk => \&_ping_unicosmk,
-     netbsd   => \&_ping_unix,
+     netbsd   => \&_ping_netbsd,
      irix     => \&_ping_unix,
      aix      => \&_ping_aix,
     );
@@ -165,6 +165,20 @@ sub _ping_unix {
   my $command = "ping -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
+
+
+sub _locate_ping_netbsd {
+ return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
+ return 'ping';
+}
+
+sub _ping_netbsd {
+  my %args = @_;
+  my $command = _locate_ping_netbsd()." -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
+  return _ping_system($command, 0);
+}
+#-s size -c count -w timeout 
+#http://netbsd.gw.com/cgi-bin/man-cgi?ping++NetBSD-current
 
 # Assumed OK for FreeBSD 3.4
 # -s size option supported -- superuser only... fixme

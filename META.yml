@@ -1,11 +1,14 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Net-Ping-External
-version:      0.12_01
-version_from: External.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Net-Ping-External
+version:             0.12_02
+abstract:            Cross-platform interface to ICMP "ping" utilities
+license:             perl
+generated_by:        ExtUtils::MakeMaker version 6.30_04
+author:              Alexandr Ciornii <alexchorny@gmail.com>
+distribution_type:   module
+requires:     
+    Carp:                          0
     Socket:                        0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+meta-spec:
+    url: http://module-build.sourceforge.net/META-spec-new.html
+    version: 1.1

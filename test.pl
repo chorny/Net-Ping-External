@@ -100,7 +100,7 @@ if (@failed) {
   }
 }
 
-my @output = `perl -v`;
+my @output = `$^X -v`;
 my $a='';
 $a.= "\nOperating system according to perl: ", $^O, "\n";
 $a.= "Operating system according to `uname -a` (if available):\n";
@@ -108,7 +108,8 @@ $a.= `uname -a`;
 $a.= "Perl version: ";
 $a.= @output[1..1];
 $a.= "Ping help: ";
-$a.= `ping`;
+$a.= ($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():`ping`);
+$a.="\n";
 open A,'>NPE.out';
 print A $a;
 print $a;

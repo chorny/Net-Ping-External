@@ -6,7 +6,7 @@ package Net::Ping::External;
 # Copyright (c) 2001-2003 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
-# Copyright (c) 2006 Alexandr Ciornii
+# Copyright (c) 2006-2007 Alexandr Ciornii
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG);
@@ -14,7 +14,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.12_02";
+$VERSION = "0.12";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -192,7 +192,13 @@ sub _ping_bsd {
 # -s size option available to superuser... FIXME?
 sub _ping_linux {
   my %args = @_;
-  my $command = "ping -c $args{count} $args{host}";
+  my $command;
+#for next version
+#  if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
+#   $command = "ping -c $args{count} -s $args{size} $args{host}";
+#  } else {
+  $command = "ping -c $args{count} $args{host}";
+#  }
   return _ping_system($command, 0);
 }
 

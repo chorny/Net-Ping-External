@@ -1,5 +1,6 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.12 = 0.12_02 Feb 08 2007
 0.12_02: Feb 01 2007
 - Full path to ping specified on NetBSD.
 

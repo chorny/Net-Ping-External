@@ -1,14 +1,15 @@
 --- #YAML:1.0
 name:                Net-Ping-External
-version:             0.12_02
+version:             0.12
 abstract:            Cross-platform interface to ICMP "ping" utilities
 license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.30_04
-author:              Alexandr Ciornii <alexchorny@gmail.com>
+generated_by:        ExtUtils::MakeMaker version 6.31
 distribution_type:   module
 requires:     
     Carp:                          0
     Socket:                        0
 meta-spec:
-    url: http://module-build.sourceforge.net/META-spec-new.html
-    version: 1.1
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - Alexandr Ciornii <alexchorny@gmail.com>

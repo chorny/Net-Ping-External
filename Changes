@@ -1,12 +1,17 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.13 Dec 18 2008
+- Small fixes in test
+- Support of count param on RedHat-based systems and SuSE
+- Other small changes
+
 0.12 = 0.12_02 Feb 08 2007
 0.12_02: Feb 01 2007
 - Full path to ping specified on NetBSD.
 
 0.12_01: Sep 07 2006
 Alexandr Ciornii appointed as comaintainer by CPAN admins
-- Updates e-mails to point to me.
+- Updated e-mails to point to me.
 - Fixed ping for Cygwin, national Windows and Windows+ppt
 - Added more information for report
 - test.pl returns correct exit code (previously it always passed)

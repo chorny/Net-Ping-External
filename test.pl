@@ -102,21 +102,28 @@ if (@failed) {
 
 my @output = `$^X -v`;
 my $a='';
-$a.= "\nOperating system according to perl: ", $^O, "\n";
+$a.= "\nOperating system according to perl: ".$^O."\n";
 $a.= "Operating system according to `uname -a` (if available):\n";
 $a.= `uname -a`;
 $a.= "Perl version: ";
 $a.= @output[1..1];
 $a.= "Ping help: ";
-$a.= ($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():`ping`);
+my $ping=($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():'ping');
+$a.= `$ping 2>&1`;
 $a.="\n";
+if (@failed and $failed[0]==5 and lc($^O) eq 'linux') {
+ $a.="-\nping -c 1 some.non.existent.host\n";
+ $a.=`ping -c 1 some.non.existent.host`;
+ $a.="\n-\n";
+}
 open A,'>NPE.out';
 print A $a;
+close A;
 print $a;
 print "-------------------------------------------------\n";
 print "If any of the above tests failed, please e-mail the bits between the dashed\n";
-print "lines or content of NPE.out to alexchorny AT gmail.com This will help me in fixing this\n";
-print "code for maximum portability to your platform. Thanks!\n";
+print "lines or content of 'NPE.out' to alexchorny AT gmail.com This will help me in\n";
+print "fixing this code for maximum portability to your platform. Thanks!\n";
 
 print "\nTests: ".(@failed?"fail":"ok")."\n";
 exit (@failed?1:0);

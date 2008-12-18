@@ -6,7 +6,7 @@ package Net::Ping::External;
 # Copyright (c) 2001-2003 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
-# Copyright (c) 2006-2007 Alexandr Ciornii
+# Copyright (c) 2006-2008 Alexandr Ciornii
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG);
@@ -14,7 +14,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.12";
+$VERSION = "0.13";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -65,6 +65,7 @@ sub ping {
 sub _ping_win32 {
   my %args = @_;
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
+  #for each ping
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   print "$command\n" if $DEBUG;
   my $result = `$command`;
@@ -73,6 +74,21 @@ sub _ping_win32 {
   return 1 if $result =~ /is alive/; # ppt (from CPAN) ping
 #  return 1 if $result !~ /\(100%/; # 100% packages lost
   return 0;
+}
+
+# Mac OS X 10.2 ping does not handle -w timeout now does it return a
+# status code if it fails to ping (unless it cannot resolve the domain 
+# name)
+# Thanks to Peter N. Lewis for this one.
+sub _ping_darwin {
+   my %args = @_;
+   my $command = "ping -s $args{size} -c $args{count} $args{host}";
+   my $devnull = "/dev/null";
+   $command .= " 2>$devnull";
+   print "$command\n" if $DEBUG;
+   my $result = `$command`;
+   return 1 if $result =~ /(\d+) packets received/ && $1 > 0;
+   return 0;
 }
 
 # Generic subroutine to handle pinging using the system() function. Generally,
@@ -93,21 +109,6 @@ sub _ping_system {
 
 # Below are all the systems on which _ping_system() has been tested
 # and found OK.
-
-# Mac OS X 10.2 ping does not handle -w timeout now does it return a
-# status code if it fails to ping (unless it cannot resolve the domain 
-# name)
-# Thanks to Peter N. Lewis for this one.
-sub _ping_darwin {
-   my %args = @_;
-   my $command = "ping -s $args{size} -c $args{count} $args{host}";
-   my $devnull = "/dev/null";
-   $command .= " 2>$devnull";
-   print "$command\n" if $DEBUG;
-   my $result = `$command`;
-   return 1 if $result =~ /(\d+) packets received/ && $1 > 0;
-   return 0;
-}
 
 # Assumed OK for DEC OSF
 sub _ping_dec_osf {
@@ -168,8 +169,8 @@ sub _ping_unix {
 
 
 sub _locate_ping_netbsd {
- return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
- return 'ping';
+  return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
+  return 'ping';
 }
 
 sub _ping_netbsd {
@@ -194,11 +195,11 @@ sub _ping_linux {
   my %args = @_;
   my $command;
 #for next version
-#  if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
-#   $command = "ping -c $args{count} -s $args{size} $args{host}";
-#  } else {
-  $command = "ping -c $args{count} $args{host}";
-#  }
+  if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
+    $command = "ping -c $args{count} -s $args{size} $args{host}";
+  } else {
+    $command = "ping -c $args{count} $args{host}";
+  }
   return _ping_system($command, 0);
 }
 
@@ -213,9 +214,9 @@ sub _ping_solaris {
 # -s size option supported -- superuser only... FIXME?
 # -w timeout option for BSD replaced by -t
 sub _ping_freebsd {
-    my %args = @_;
-    my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
-    return _ping_system($command, 0);
+  my %args = @_;
+  my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+  return _ping_system($command, 0);
 }
 
 #No timeout
@@ -400,7 +401,7 @@ system is probably trivial.
 
 =head1 BUGS
 
-This module should be considered alpha. Bugs may exist. Although no
+This module should be considered beta. Bugs may exist. Although no
 specific bugs are known at this time, the module could use testing
 on a greater variety of systems.
 
@@ -437,7 +438,7 @@ Marc-Andre Dumas contributed a patch for FreeBSD support.
 Jonathan Stowe fixed a bug in 0.09 that prevented the module from
 running on some systems.
 
-Numerous people sent in a patch to fix a bug in 0.10 that broke ping on Windown systems.
+Numerous people sent in a patch to fix a bug in 0.10 that broke ping on Windows systems.
 
 Peter N. Lewis contributed a patch that works correctly on Mac OS X
 10.2 (and hopefully other versions as well).
@@ -447,6 +448,3 @@ Peter N. Lewis contributed a patch that works correctly on Mac OS X
 Net::Ping
 
 =cut
-
-
-

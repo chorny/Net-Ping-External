@@ -223,6 +223,13 @@ sub _ping_freebsd {
 #No timeout
 #Usage:  ping [-dfqrv] host [packetsize [count [preload]]]
 sub _ping_cygwin {
+  my $which_ping = `which ping`;
+  if (!$which_ping) {
+    return;
+  }
+  if ($which_ping =~ m#/cygdrive/c/WINDOWS/SYSTEM32/ping#) {
+    return _ping_win32(@_);
+  }
   my %args = @_;
   my $command = "ping $args{host} $args{size} $args{count}";
   return _ping_system($command, 0);

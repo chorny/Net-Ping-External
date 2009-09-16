@@ -12,4 +12,9 @@ WriteMakefile(
       Carp => 0,
 #      perl => '5.4',
     },
+    META_MERGE => {
+        resources => {
+            repository => 'http://github.com/chorny/Net-Ping-External',
+        },
+    },
 );

@@ -234,7 +234,7 @@ __END__
 
 =head1 NAME
 
-Net::Ping::External - Cross-platform interface to ICMP "ping" utilities
+Net::Ping::External - Cross-platform Perl interface to "ping" utilities
 
 =head1 SYNOPSIS
 

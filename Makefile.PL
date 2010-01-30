@@ -16,5 +16,6 @@ WriteMakefile(
         resources => {
             repository => 'http://github.com/chorny/Net-Ping-External',
         },
+        keywords => ['ping',],
     },
 );

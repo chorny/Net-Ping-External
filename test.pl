@@ -21,7 +21,7 @@ print "ok 1\n";
 %test_names = (1 => "use Net::Ping::External qw(ping)",
 	       2 => "ping(host => '127.0.0.1')",
 	       3 => "ping(host => '127.0.0.1', timeout => 5)",
-	       4 => "ping(host => 'some.non.existent.host')",
+	       4 => "ping(host => 'some.non.existent.host.')",
 	       5 => "ping(host => '127.0.0.1', count => 10)",
 	       6 => "ping(host => '127.0.0.1', size => 32)"
 	      );
@@ -51,7 +51,7 @@ else {
   push @failed, 3;
 }
 
-eval { $ret = ping(host => 'some.non.existent.host') };
+eval { $ret = ping(host => 'some.non.existent.host.') };
 if (!$@ && !$ret) {
   print "ok 4\n";
   push @passed, 4;

@@ -51,6 +51,7 @@ sub ping {
      netbsd   => \&_ping_netbsd,
      irix     => \&_ping_unix,
      aix      => \&_ping_aix,
+     svr5     => \&_ping_unix, #SCO OpenServer
     );
 
   my $subref = $dispatch{lc $^O};

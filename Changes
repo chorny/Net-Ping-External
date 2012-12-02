@@ -1,5 +1,8 @@
 Revision history for Perl extension Net::Ping::External.
 
+- trailing dot for unexistent host in test (Marcin Gryszkalis)
+- SCO OpenServer added
+
 0.13 Dec 18 2008
 - Small fixes in test
 - Support of count param on RedHat-based systems and SuSE

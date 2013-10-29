@@ -1,9 +1,10 @@
 Revision history for Perl extension Net::Ping::External.
 
+0.14 2013-10-29
 - trailing dot for unexistent host in test (Marcin Gryszkalis)
 - SCO OpenServer added
 - tests will not fail if nonexisting domain resolves
-- detect Windows ping under Cygwin
+- detect Windows ping under Cygwin (Ben Bullock)
 
 0.13 Dec 18 2008
 - Small fixes in test

@@ -120,7 +120,11 @@ $a.= "Perl version: ";
 $a.= @output[1..1];
 $a.= "Ping help: ";
 my $ping=($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():'ping');
-$a.= `$ping 2>&1`;
+my $usage='';
+if ($^O eq 'gnukfreebsd') {
+  $usage = '--help';
+}
+$a.= `$ping $usage 2>&1`;
 $a.="\n";
 if (@failed and $failed[0]==5 and lc($^O) eq 'linux') {
  $a.="-\nping -c 1 some.non.existent.host\n";

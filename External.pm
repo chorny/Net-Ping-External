@@ -227,14 +227,13 @@ sub _ping_cygwin {
   if (!$which_ping) {
     return;
   }
-  if ($which_ping =~ m#/cygdrive/c/WINDOWS/SYSTEM32/ping#) {
+  if ($which_ping =~ m#/cygdrive/\w/WINDOWS/SYSTEM32/ping#) {
     return _ping_win32(@_);
   }
   my %args = @_;
   my $command = "ping $args{host} $args{size} $args{count}";
   return _ping_system($command, 0);
 }
-#Problem is that we may be running windows ping
 
 1;
 

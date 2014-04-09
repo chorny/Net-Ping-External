@@ -118,6 +118,9 @@ $a.= "Operating system according to `uname -a` (if available):\n";
 $a.= `uname -a`;
 $a.= "Perl version: ";
 $a.= @output[1..1];
+if ($^O ne 'MSWin32') {
+  $a.= "Ping location: ".`which ping`;
+}
 $a.= "Ping help: ";
 my $ping=($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():'ping');
 my $usage='';

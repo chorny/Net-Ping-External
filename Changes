@@ -1,5 +1,13 @@
 Revision history for Perl extension Net::Ping::External.
 
+In future Net::Ping::External may require perl 5.6.
+If you use perl older than 5.6 - write to alexchorny[AT]gmail.com
+and tell me what perl version do you use, why and will you need
+newer versions of Net::Ping::External.
+
+- Better detect Windows ping under Cygwin
+- Add ping output fro test 2 if it fails
+
 0.14 2013-10-29
 - trailing dot for unexistent host in test (Marcin Gryszkalis)
 - SCO OpenServer added

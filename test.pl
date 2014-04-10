@@ -12,6 +12,7 @@ use Net::Ping::External qw(ping);
 $loaded = 1;
 print "ok 1\n";
 
+$Net::Ping::External::DEBUG_OUTPUT = 1;
 ######################### End of black magic.
 
 # Insert your test code below (better if it prints "ok 13"
@@ -31,6 +32,8 @@ print "ok 1\n";
 push @passed, 1 if $loaded;
 push @failed, 1 unless $loaded;
 
+my $output_test_2;
+my $exit_test_2;
 eval { $ret = ping(host => '127.0.0.1') };
 if (!$@ && $ret) {
   print "ok 2\n";
@@ -39,6 +42,8 @@ if (!$@ && $ret) {
 else {
   print "not ok 2\n";
   push @failed, 2;
+  $output_test_2 = $Net::Ping::External::LAST_OUTPUT;
+  $exit_test_2 = $Net::Ping::External::LAST_EXIT_CODE;
 }
 
 eval { $ret = ping(host => '127.0.0.1', timeout => 5) };
@@ -114,8 +119,10 @@ if (@failed) {
 my @output = `$^X -v`;
 my $a='';
 $a.= "\nOperating system according to perl: ".$^O."\n";
-$a.= "Operating system according to `uname -a` (if available):\n";
-$a.= `uname -a`;
+if ($^O ne 'MSWin32') {
+  $a.= "Operating system according to `uname -a` (if available):\n";
+  $a.= `uname -a`;
+}
 $a.= "Perl version: ";
 $a.= @output[1..1];
 if ($^O ne 'MSWin32') {
@@ -134,6 +141,13 @@ if (@failed and $failed[0]==5 and lc($^O) eq 'linux') {
  $a.=`ping -c 1 some.non.existent.host`;
  $a.="\n-\n";
 }
+if (@failed and $failed[0]==2) {
+ $a.="-\nresults for test 2:\n";
+ $a.="exit code for test 2: $exit_test_2\n";
+ $a.="output for test 2: $output_test_2";
+ $a.="\n-\n";
+}
+
 open A,'>NPE.out';
 print A $a;
 close A;

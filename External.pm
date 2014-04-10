@@ -46,6 +46,7 @@ sub ping {
      darwin   => \&_ping_darwin,
      openbsd  => \&_ping_unix,
      freebsd  => \&_ping_freebsd,
+     midnightbsd => \&_ping_freebsd,
      next     => \&_ping_next,
      unicosmk => \&_ping_unicosmk,
      netbsd   => \&_ping_netbsd,

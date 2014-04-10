@@ -227,7 +227,7 @@ sub _ping_cygwin {
   if (!$which_ping) {
     return;
   }
-  if ($which_ping =~ m#/cygdrive/\w/WINDOWS/SYSTEM32/ping#) {
+  if ($which_ping =~ m#/cygdrive/\w/WINDOWS/SYSTEM32/ping#i) {
     return _ping_win32(@_);
   }
   my %args = @_;

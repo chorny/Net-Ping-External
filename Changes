@@ -6,7 +6,7 @@ and tell me what perl version do you use, why and will you need
 newer versions of Net::Ping::External.
 
 - Better detect Windows ping under Cygwin
-- Add ping output fro test 2 if it fails
+- Add ping output for test 2 if it fails
 
 0.14 2013-10-29
 - trailing dot for unexistent host in test (Marcin Gryszkalis)

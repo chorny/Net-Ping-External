@@ -34,6 +34,8 @@ push @failed, 1 unless $loaded;
 
 my $output_test_2;
 my $exit_test_2;
+my $error_test_2;
+
 eval { $ret = ping(host => '127.0.0.1') };
 if (!$@ && $ret) {
   print "ok 2\n";
@@ -44,6 +46,9 @@ else {
   push @failed, 2;
   $output_test_2 = $Net::Ping::External::LAST_OUTPUT;
   $exit_test_2 = $Net::Ping::External::LAST_EXIT_CODE;
+  if ($@) {
+    $error_test_2 = $@;
+  }
 }
 
 eval { $ret = ping(host => '127.0.0.1', timeout => 5) };
@@ -144,7 +149,8 @@ if (@failed and $failed[0]==5 and lc($^O) eq 'linux') {
 if (@failed and $failed[0]==2) {
  $a.="-\nresults for test 2:\n";
  $a.="exit code for test 2: $exit_test_2\n";
- $a.="output for test 2: $output_test_2";
+ $a.="output for test 2: $output_test_2" if defined $output_test_2;
+ $a.="\$\@ for test 2: $error_test_2" if $error_test_2;
  $a.="\n-\n";
 }
 

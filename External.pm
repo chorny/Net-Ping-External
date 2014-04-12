@@ -6,7 +6,7 @@ package Net::Ping::External;
 # Copyright (c) 2001-2003 Colin McMillen.  All rights reserved.  This
 # program is free software; you may redistribute it and/or modify it
 # under the same terms as Perl itself.
-# Copyright (c) 2006-2008 Alexandr Ciornii
+# Copyright (c) 2006-2014 Alexandr Ciornii
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);

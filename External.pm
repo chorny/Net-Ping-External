@@ -79,7 +79,7 @@ sub _ping_win32 {
   return ($min,$avg,$max,$mdev,1) if $result =~ /TTL/;
   return ($min,$avg,$max,$mdev,1) if $result =~ /is alive/; # ppt (from CPAN) ping
 #  return 1 if $result !~ /\(100%/; # 100% packages lost
-  return 0;
+  return ($min,$avg,$max,$mdev,0);
 }
 
 # Mac OS X 10.2 ping does not handle -w timeout now does it return a
@@ -98,7 +98,7 @@ sub _ping_darwin {
   $result =~ /^.*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*)\sms/m;
   my ($min,$avg,$max,$mdev) = ($1, $2, $3, $4);
   return ($min,$avg,$max,$mdev,1) if $result =~ /(\d+) packets received/ && $1 > 0;
-  return 0;
+  return ($min,$avg,$max,$mdev,0);
 }
 
 # Generic subroutine to handle pinging using the system() function. Generally,
@@ -114,12 +114,12 @@ sub _ping_system {
   print "#$command\n" if $DEBUG;
   my $result = `$command`;
   $LAST_OUTPUT = $result if $DEBUG_OUTPUT;
-  $LAST_EXIT_CODE = $!;
+  $LAST_EXIT_CODE = $?;
   $result =~ /^.*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*)\sms/m;
   my ($min,$avg,$max,$mdev) = ($1, $2, $3, $4);
   my $exit_status = $LAST_EXIT_CODE  >> 8;
   return ($min,$avg,$max,$mdev,1) if $exit_status == $success;
-  return 0;
+  return ($min,$avg,$max,$mdev,0);
 }
 
 # Below are all the systems on which _ping_system() has been tested

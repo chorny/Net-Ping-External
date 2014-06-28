@@ -8,6 +8,10 @@ newer versions of Net::Ping::External.
 - Better detect Windows ping under Cygwin
 - Add ping output for test 2 if it fails
 
+0.15 2014-06-28
+- Added ping time statistics on the return.
+- Modified documentation to get the times.
+
 0.14 2013-10-29
 - trailing dot for unexistent host in test (Marcin Gryszkalis)
 - SCO OpenServer added

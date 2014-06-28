@@ -14,7 +14,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.14";
+$VERSION = "0.15";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -73,9 +73,11 @@ sub _ping_win32 {
   my $result = `$command`;
   $LAST_OUTPUT = $result if $DEBUG_OUTPUT;
   $LAST_EXIT_CODE = $!;
-  return 1 if $result =~ /time.*ms/;
-  return 1 if $result =~ /TTL/;
-  return 1 if $result =~ /is alive/; # ppt (from CPAN) ping
+  $result =~ /^.*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*)\sms/m;
+  my ($min,$avg,$max,$mdev) = ($1, $2, $3, $4);
+  return ($min,$avg,$max,$mdev,1) if $result =~ /time.*ms/;
+  return ($min,$avg,$max,$mdev,1) if $result =~ /TTL/;
+  return ($min,$avg,$max,$mdev,1) if $result =~ /is alive/; # ppt (from CPAN) ping
 #  return 1 if $result !~ /\(100%/; # 100% packages lost
   return 0;
 }
@@ -93,7 +95,9 @@ sub _ping_darwin {
   my $result = `$command`;
   $LAST_OUTPUT = $result if $DEBUG_OUTPUT;
   $LAST_EXIT_CODE = $!;
-  return 1 if $result =~ /(\d+) packets received/ && $1 > 0;
+  $result =~ /^.*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*)\sms/m;
+  my ($min,$avg,$max,$mdev) = ($1, $2, $3, $4);
+  return ($min,$avg,$max,$mdev,1) if $result =~ /(\d+) packets received/ && $1 > 0;
   return 0;
 }
 
@@ -106,11 +110,15 @@ sub _ping_system {
       $success,   # What value the system ping command returns on success
      ) = @_;
   my $devnull = "/dev/null";
-  $command .= " 1>$devnull 2>$devnull";
+  $command .= " 2>$devnull";
   print "#$command\n" if $DEBUG;
-  $LAST_EXIT_CODE = system($command);
+  my $result = `$command`;
+  $LAST_OUTPUT = $result if $DEBUG_OUTPUT;
+  $LAST_EXIT_CODE = $!;
+  $result =~ /^.*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*)\sms/m;
+  my ($min,$avg,$max,$mdev) = ($1, $2, $3, $4);
   my $exit_status = $LAST_EXIT_CODE  >> 8;
-  return 1 if $exit_status == $success;
+  return ($min,$avg,$max,$mdev,1) if $exit_status == $success;
   return 0;
 }
 
@@ -268,8 +276,9 @@ Some examples:
   my @hosts = qw(127.0.0.1 127.0.0.2 127.0.0.3 127.0.0.4);
   my $num_alive = 0;
   foreach (@hosts) {
-    $alive = ping(hostname => $_, timeout => 5);
-    print "$_ is alive!\n" if $alive;
+    # Getting the ping time statistics
+    my ($min,$avg,$max,$mdev,$alive) = ping(hostname => $_, timeout => 5);
+    print "$_ is alive! rtt min/avg/max/mdev = $min/$avg/$max/$mdev ms\n" if $alive;
     $num_alive++;
   }
   print "$num_alive hosts are alive.\n";
@@ -282,9 +291,10 @@ Some examples:
 Net::Ping::External is a module which interfaces with the "ping" command
 on many systems. It presently provides a single function, C<ping()>, that
 takes in a hostname and (optionally) a timeout and returns true if the
-host is alive, and false otherwise. Unless you have the ability (and
-willingness) to run your scripts as the superuser on your system, this
-module will probably provide more accurate results than Net::Ping will.
+host is alive and the ping time statistics, and false otherwise. Unless 
+you have the ability (and willingness) to run your scripts as the superuser 
+on your system, this module will probably provide more accurate results 
+than Net::Ping will.
 
 Why?
 

@@ -1,3 +1,4 @@
+use 5.005;
 use ExtUtils::MakeMaker;
 WriteMakefile1(
     'NAME'		=> 'Net::Ping::External',
@@ -9,6 +10,7 @@ WriteMakefile1(
       Socket => 0,
       Carp => 0,
     },
+    MIN_PERL_VERSION => '5.005',
     META_MERGE => {
         resources => {
             repository => 'http://github.com/chorny/Net-Ping-External',

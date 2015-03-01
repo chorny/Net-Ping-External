@@ -8,6 +8,7 @@ package Net::Ping::External;
 # under the same terms as Perl itself.
 # Copyright (c) 2006-2014 Alexandr Ciornii
 
+use 5.005;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);
 use Carp;

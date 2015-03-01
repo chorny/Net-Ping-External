@@ -88,7 +88,7 @@ sub _ping_win32 {
 # Thanks to Peter N. Lewis for this one.
 sub _ping_darwin {
   my %args = @_;
-  my $command = "ping -s $args{size} -c $args{count} $args{host}";
+  my $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
   my $devnull = "/dev/null";
   $command .= " 2>$devnull";
   print "#$command\n" if $DEBUG;
@@ -176,6 +176,13 @@ sub _ping_unix {
   return _ping_system($command, 0);
 }
 
+sub _locate_ping {
+  if ($^O eq 'darwin' || $^O eq 'Netbsd') {
+    return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
+  }
+  return 'ping';
+}
+
 
 sub _locate_ping_netbsd {
   return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
@@ -184,7 +191,7 @@ sub _locate_ping_netbsd {
 
 sub _ping_netbsd {
   my %args = @_;
-  my $command = _locate_ping_netbsd()." -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
+  my $command = _locate_ping()." -s $args{size} -c $args{count} -w $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 #-s size -c count -w timeout 

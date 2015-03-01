@@ -134,7 +134,7 @@ if ($^O ne 'MSWin32') {
   $a.= "Ping location: ".`which ping`;
 }
 $a.= "Ping help: ";
-my $ping=($^O eq 'Netbsd'?Net::Ping::External::_locate_ping_netbsd():'ping');
+my $ping=Net::Ping::External::_locate_ping();
 my $usage='';
 if ($^O eq 'gnukfreebsd') {
   $usage = '--help';

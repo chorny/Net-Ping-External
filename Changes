@@ -6,6 +6,7 @@ and tell me what perl version do you use, why and will you need
 newer versions of Net::Ping::External.
 
 - Support Debian GNU/kFreeBSD
+- ping location on Darwin
 
 0.15 2014-04-12
 - Better detect Windows ping under Cygwin

@@ -433,6 +433,8 @@ Beware Greeks bearing gifts.
 
 Alexandr Ciornii (alexchorny AT gmail.com), Colin McMillen (colinm AT cpan.org)
 
+=head1 LICENSE
+
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 

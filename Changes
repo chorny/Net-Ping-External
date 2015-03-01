@@ -5,6 +5,8 @@ If you use perl older than 5.6 - write to alexchorny[AT]gmail.com
 and tell me what perl version do you use, why and will you need
 newer versions of Net::Ping::External.
 
+- Support Debian GNU/kFreeBSD
+
 0.15 2014-04-12
 - Better detect Windows ping under Cygwin
 - Add ping output for test 2 if it fails

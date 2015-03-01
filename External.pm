@@ -36,6 +36,7 @@ sub ping {
 
   my %dispatch = 
     (linux    => \&_ping_linux,
+     gnukfreebsd => \&_ping_linux, #Debian GNU/kFreeBSD
      mswin32  => \&_ping_win32,
      cygwin   => \&_ping_cygwin,
      solaris  => \&_ping_solaris,

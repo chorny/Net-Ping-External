@@ -12,7 +12,8 @@ use 5.005;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);
 use Carp;
-use Socket qw(inet_ntoa);
+use Net::IP qw(ip_is_ipv6);
+use Socket qw(inet_ntop);
 require Exporter;
 
 $VERSION = "0.15";
@@ -28,7 +29,9 @@ sub ping {
   $args{host} = $args{hostname} if defined $args{hostname};
 
   # If we have an "ip" argument, convert it to a hostname and use that.
-  $args{host} = inet_ntoa($args{ip}) if defined $args{ip};
+  if( defined $args{ip} ) {
+      $args{host} = inet_ntop($args{ip});
+  }
 
   # croak() if no hostname was provided.
   croak("You must provide a hostname") unless defined $args{host};
@@ -201,7 +204,12 @@ sub _ping_netbsd {
 # -s size option supported -- superuser only... fixme
 sub _ping_bsd {
   my %args = @_;
-  my $command = "ping -c $args{count} -q $args{hostname}";
+
+  my $command = "ping";
+  if( ip_is_ipv6( $args{ host } ) ) {
+      $command .= "6";
+  }
+  my $command .= " -c $args{count} -q $args{hostname}";
   return _ping_system($command, 0);
 }
 
@@ -209,12 +217,17 @@ sub _ping_bsd {
 # -s size option available to superuser... FIXME?
 sub _ping_linux {
   my %args = @_;
-  my $command;
+
+  my $command = "ping";
+  if( ip_is_ipv6( $args{host} ) ) {
+    $command .= "6";
+  }
+
 #for next version
   if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
-    $command = "ping -c $args{count} -s $args{size} $args{host}";
+    $command .= " -c $args{count} -s $args{size} $args{host}";
   } else {
-    $command = "ping -c $args{count} $args{host}";
+    $command .= " -c $args{count} $args{host}";
   }
   return _ping_system($command, 0);
 }
@@ -222,7 +235,12 @@ sub _ping_linux {
 # Solaris 2.6, 2.7 OK
 sub _ping_solaris {
   my %args = @_;
-  my $command = "ping -s $args{host} $args{size} $args{timeout}";
+
+  my $command = "ping";
+  if( ip_is_ipv6( $args{ host } ) ) {
+      $command .= "6";
+  }
+  $command .= " -s $args{host} $args{size} $args{timeout}";
   return _ping_system($command, 0);
 }
 
@@ -231,7 +249,12 @@ sub _ping_solaris {
 # -w timeout option for BSD replaced by -t
 sub _ping_freebsd {
   my %args = @_;
-  my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+
+  my $command = "ping";
+  if( $args{ host } ) {
+      $command .= "6";
+  }
+  $command .= " -c $args{count} -t $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 
@@ -246,7 +269,11 @@ sub _ping_cygwin {
     return _ping_win32(@_);
   }
   my %args = @_;
-  my $command = "ping $args{host} $args{size} $args{count}";
+  my $command = "ping";
+  if( ip_is_ipv6( $args{host} ) ) {
+    $command .= "6";
+  }
+  $command .= " $args{host} $args{size} $args{count}";
   return _ping_system($command, 0);
 }
 

@@ -247,14 +247,17 @@ sub _ping_solaris {
 # FreeBSD. Tested OK for Freebsd 4.3
 # -s size option supported -- superuser only... FIXME?
 # -w timeout option for BSD replaced by -t
+# -t timeout option for ping6 replaced by -h
 sub _ping_freebsd {
   my %args = @_;
 
-  my $command = "ping";
-  if( $args{ host } ) {
-      $command .= "6";
+  my $command;
+  if( ip_is_ipv6( $args{ host } ) ) {
+      $command = "ping6 -c $args{count} -h $args{timeout} $args{host}";
+  } else {
+      $command = "ping -c $args{count} -t $args{timeout} $args{host}";
   }
-  $command .= " -c $args{count} -t $args{timeout} $args{host}";
+
   return _ping_system($command, 0);
 }
 

@@ -74,6 +74,10 @@ sub _ping_win32 {
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
   #for each ping
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
+  if( ip_is_ipv6( $args{ host } ) ) {
+    $command = "ping -6 -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
+  }
+
   print "#$command\n"  if $DEBUG;
   my $result = `$command`;
   $LAST_OUTPUT = $result if $DEBUG_OUTPUT;

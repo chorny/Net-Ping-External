@@ -95,7 +95,13 @@ sub _ping_win32 {
 # Thanks to Peter N. Lewis for this one.
 sub _ping_darwin {
   my %args = @_;
-  my $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
+
+  my $command;
+  if( ip_is_ipv6( $args{ host } ) ) {
+    $command = "ping6 -s $args{size} -c $args{count} $args{host}";
+  } else {
+    $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
+  }
   my $devnull = "/dev/null";
   $command .= " 2>$devnull";
   print "#$command\n" if $DEBUG;

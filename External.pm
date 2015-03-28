@@ -190,7 +190,7 @@ sub _ping_unix {
 }
 
 sub _locate_ping {
-  if ($^O eq 'darwin' || $^O eq 'Netbsd') {
+  if ($^O eq 'darwin' || $^O eq 'Netbsd' || $^O eq 'Solaris') {
     return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
   }
   return 'ping';
@@ -246,11 +246,13 @@ sub _ping_linux {
 sub _ping_solaris {
   my %args = @_;
 
-  my $command = "ping";
+  my $command = _locate_ping();
   if( ip_is_ipv6( $args{ host } ) ) {
-      $command .= "6";
+    $command .= " -A inet6";
+  } else {
+    $command .= " -A inet4";
   }
-  $command .= " -s $args{host} $args{size} $args{timeout}";
+  $command .= " -s -a $args{host} -t $args{timeout} $args{size}";
   return _ping_system($command, 0);
 }
 

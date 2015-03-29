@@ -250,9 +250,9 @@ sub _ping_solaris {
   if( ip_is_ipv6( $args{ host } ) ) {
     $command .= " -A inet6";
   } else {
-    $command .= " -A inet4";
+    $command .= " -A inet";
   }
-  $command .= " -s -a $args{host} -t $args{timeout} $args{size}";
+  $command .= " -s -a -t $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 

@@ -12,7 +12,6 @@ use 5.005;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);
 use Carp;
-use Net::IP qw(ip_is_ipv6);
 use Socket qw(inet_ntop);
 require Exporter;
 
@@ -74,7 +73,7 @@ sub _ping_win32 {
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
   #for each ping
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
-  if( ip_is_ipv6( $args{ host } ) ) {
+  if( _ip_is_ipv6( $args{ host } ) ) {
     $command = "ping -6 -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
   }
 
@@ -97,7 +96,7 @@ sub _ping_darwin {
   my %args = @_;
 
   my $command;
-  if( ip_is_ipv6( $args{ host } ) ) {
+  if( _ip_is_ipv6( $args{ host } ) ) {
     $command = "ping6 -s $args{size} -c $args{count} $args{host}";
   } else {
     $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
@@ -216,7 +215,7 @@ sub _ping_bsd {
   my %args = @_;
 
   my $command = "ping";
-  if( ip_is_ipv6( $args{ host } ) ) {
+  if( _ip_is_ipv6( $args{ host } ) ) {
       $command .= "6";
   }
   my $command .= " -c $args{count} -q $args{hostname}";
@@ -229,7 +228,7 @@ sub _ping_linux {
   my %args = @_;
 
   my $command = "ping";
-  if( ip_is_ipv6( $args{host} ) ) {
+  if( _ip_is_ipv6( $args{host} ) ) {
     $command .= "6";
   }
 
@@ -247,7 +246,7 @@ sub _ping_solaris {
   my %args = @_;
 
   my $command = _locate_ping();
-  if( ip_is_ipv6( $args{ host } ) ) {
+  if( _ip_is_ipv6( $args{ host } ) ) {
     $command .= " -A inet6";
   } else {
     $command .= " -A inet";
@@ -264,7 +263,7 @@ sub _ping_freebsd {
   my %args = @_;
 
   my $command;
-  if( ip_is_ipv6( $args{ host } ) ) {
+  if( _ip_is_ipv6( $args{ host } ) ) {
       $command = "ping6 -c $args{count} -h $args{timeout} $args{host}";
   } else {
       $command = "ping -c $args{count} -t $args{timeout} $args{host}";
@@ -285,11 +284,32 @@ sub _ping_cygwin {
   }
   my %args = @_;
   my $command = "ping";
-  if( ip_is_ipv6( $args{host} ) ) {
+  if( _ip_is_ipv6( $args{host} ) ) {
     $command .= "6";
   }
   $command .= " $args{host} $args{size} $args{count}";
   return _ping_system($command, 0);
+}
+
+sub _ip_is_ipv6 {
+  my $address = shift;
+
+  my $IPv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
+  my $G = "[0-9a-fA-F]{1,4}";
+
+  my @tail = ( ":",
+           "(:($G)?|$IPv4)",
+               ":($IPv4|$G(:$G)?|)",
+               "(:$IPv4|:$G(:$IPv4|(:$G){0,2})|:)",
+               "((:$G){0,2}(:$IPv4|(:$G){1,2})|:)",
+               "((:$G){0,3}(:$IPv4|(:$G){1,2})|:)",
+               "((:$G){0,4}(:$IPv4|(:$G){1,2})|:)" );
+  my $IPv6_re = $G;
+  $IPv6_re = "$G:($IPv6_re|$_)" for @tail;
+  $IPv6_re = qq/:(:$G){0,5}((:$G){1,2}|:$IPv4)|$IPv6_re/;
+  $IPv6_re =~ s/\(/(?:/g;
+  $IPv6_re = qr/$IPv6_re/;
+  $address =~ $IPv6_re;
 }
 
 1;

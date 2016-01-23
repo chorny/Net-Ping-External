@@ -1,0 +1,14 @@
+version: 1.0.{build}
+
+clone_depth: 1
+
+install:
+  - ppm install dmake
+  - lwp-download https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm C:/projects/cpanm
+  - perl C:/projects/cpanm -q --with-develop --with-suggests --installdeps .
+
+build_script:
+  - perl Makefile.PL
+
+test_script:
+  - dmake test

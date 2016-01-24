@@ -1,4 +1,8 @@
 use 5.005;
+
+use strict;
+use warnings;
+
 use ExtUtils::MakeMaker;
 WriteMakefile1(
     'NAME'		=> 'Net::Ping::External',

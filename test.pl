@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; $num_tests = 6; print "1..$num_tests\n"; }
+BEGIN { $| = 1; $num_tests = 10; print "1..$num_tests\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Net::Ping::External qw(ping);
 $loaded = 1;
@@ -24,7 +24,11 @@ $Net::Ping::External::DEBUG_OUTPUT = 1;
 	       3 => "ping(host => '127.0.0.1', timeout => 5)",
 	       4 => "ping(host => 'some.non.existent.host.')",
 	       5 => "ping(host => '127.0.0.1', count => 10)",
-	       6 => "ping(host => '127.0.0.1', size => 32)"
+              6 => "ping(host => '127.0.0.1', size => 32)",
+              7 => "ping(host => '::1')",
+              8 => "ping(host => '::1', timeout => 5)",
+              9 => "ping(host => '::1', count => 10)",
+              10 => "ping(host => '::1', size => 32)",
 	      );
 
 @passed = ();
@@ -35,6 +39,10 @@ push @failed, 1 unless $loaded;
 my $output_test_2;
 my $exit_test_2;
 my $error_test_2;
+
+my $output_test_7;
+my $exit_test_7;
+my $error_test_7;
 
 eval { $ret = ping(host => '127.0.0.1') };
 if (!$@ && $ret) {
@@ -102,6 +110,51 @@ else {
   push @failed, 6;
 }
 
+eval { $ret = ping(host => '::1') };
+if (!$@ && $ret) {
+  print "ok 7\n";
+  push @passed, 7;
+}
+else {
+  print "not ok 7\n";
+  push @failed, 7;
+  $output_test_7 = $Net::Ping::External::LAST_OUTPUT;
+  $exit_test_7 = $Net::Ping::External::LAST_EXIT_CODE;
+  if ($@) {
+    $error_test_7 = $@;
+  }
+}
+
+eval { $ret = ping(host => '::1', timeout => 5) };
+if (!$@ && $ret) {
+  print "ok 8\n";
+  push @passed, 8;
+}
+else {
+  print "not ok 8\n";
+  push @failed, 8;
+}
+
+eval { $ret = ping(host => '::1', count => 2) };
+if (!$@ && $ret) {
+  print "ok 9\n";
+  push @passed, 9;
+}
+else {
+  print "not ok 9\n";
+  push @failed, 9;
+}
+
+eval { $ret = ping(host => '::1', size => 32) };
+if (!$@ && $ret) {
+  print "ok 10\n";
+  push @passed, 10;
+}
+else {
+  print "not ok 10\n";
+  push @failed, 10;
+}
+
 print "\nRunning a more verbose test suite.";
 print "\n-------------------------------------------------\n";
 print "Net::Ping::External version: ", $Net::Ping::External::VERSION, "\n";
@@ -151,6 +204,14 @@ if (@failed and $failed[0]==2) {
  $a.="exit code for test 2: $exit_test_2\n";
  $a.="output for test 2: $output_test_2" if defined $output_test_2;
  $a.="\$\@ for test 2: $error_test_2" if $error_test_2;
+ $a.="\n-\n";
+}
+
+if (@failed and ( $failed[0]==7 or $failed[1]==7)) {
+ $a.="-\nresults for test 7:\n";
+ $a.="exit code for test 7: $exit_test_7\n";
+ $a.="output for test 7: $output_test_7" if defined $output_test_7;
+ $a.="\$\@ for test 7: $error_test_7" if $error_test_7;
  $a.="\n-\n";
 }
 

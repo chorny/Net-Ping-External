@@ -12,7 +12,7 @@ use 5.005;
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);
 use Carp;
-use Socket qw(inet_ntoa);
+use Socket qw(inet_ntop);
 require Exporter;
 
 $VERSION = "0.15";
@@ -28,7 +28,9 @@ sub ping {
   $args{host} = $args{hostname} if defined $args{hostname};
 
   # If we have an "ip" argument, convert it to a hostname and use that.
-  $args{host} = inet_ntoa($args{ip}) if defined $args{ip};
+  if( defined $args{ip} ) {
+      $args{host} = inet_ntop($args{ip});
+  }
 
   # croak() if no hostname was provided.
   croak("You must provide a hostname") unless defined $args{host};
@@ -71,6 +73,10 @@ sub _ping_win32 {
   $args{timeout} *= 1000;    # Win32 ping timeout is specified in milliseconds
   #for each ping
   my $command = "ping -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
+  if( _ip_is_ipv6( $args{ host } ) ) {
+    $command = "ping -6 -l $args{size} -n $args{count} -w $args{timeout} $args{host}";
+  }
+
   print "#$command\n"  if $DEBUG;
   my $result = `$command`;
   $LAST_OUTPUT = $result if $DEBUG_OUTPUT;
@@ -88,7 +94,13 @@ sub _ping_win32 {
 # Thanks to Peter N. Lewis for this one.
 sub _ping_darwin {
   my %args = @_;
-  my $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
+
+  my $command;
+  if( _ip_is_ipv6( $args{ host } ) ) {
+    $command = "ping6 -s $args{size} -c $args{count} $args{host}";
+  } else {
+    $command = _locate_ping()." -s $args{size} -c $args{count} $args{host}";
+  }
   my $devnull = "/dev/null";
   $command .= " 2>$devnull";
   print "#$command\n" if $DEBUG;
@@ -177,7 +189,7 @@ sub _ping_unix {
 }
 
 sub _locate_ping {
-  if ($^O eq 'darwin' || $^O eq 'Netbsd') {
+  if ($^O eq 'darwin' || $^O eq 'Netbsd' || $^O eq 'Solaris') {
     return '/usr/sbin/ping' if (-x '/usr/sbin/ping');
   }
   return 'ping';
@@ -201,7 +213,12 @@ sub _ping_netbsd {
 # -s size option supported -- superuser only... fixme
 sub _ping_bsd {
   my %args = @_;
-  my $command = "ping -c $args{count} -q $args{hostname}";
+
+  my $command = "ping";
+  if( _ip_is_ipv6( $args{ host } ) ) {
+      $command .= "6";
+  }
+  my $command .= " -c $args{count} -q $args{hostname}";
   return _ping_system($command, 0);
 }
 
@@ -209,12 +226,17 @@ sub _ping_bsd {
 # -s size option available to superuser... FIXME?
 sub _ping_linux {
   my %args = @_;
-  my $command;
+
+  my $command = "ping";
+  if( _ip_is_ipv6( $args{host} ) ) {
+    $command .= "6";
+  }
+
 #for next version
   if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
-    $command = "ping -c $args{count} -s $args{size} $args{host}";
+    $command .= " -c $args{count} -s $args{size} $args{host}";
   } else {
-    $command = "ping -c $args{count} $args{host}";
+    $command .= " -c $args{count} $args{host}";
   }
   return _ping_system($command, 0);
 }
@@ -222,16 +244,31 @@ sub _ping_linux {
 # Solaris 2.6, 2.7 OK
 sub _ping_solaris {
   my %args = @_;
-  my $command = "ping -s $args{host} $args{size} $args{timeout}";
+
+  my $command = _locate_ping();
+  if( _ip_is_ipv6( $args{ host } ) ) {
+    $command .= " -A inet6";
+  } else {
+    $command .= " -A inet";
+  }
+  $command .= " -s -a -t $args{timeout} $args{host}";
   return _ping_system($command, 0);
 }
 
 # FreeBSD. Tested OK for Freebsd 4.3
 # -s size option supported -- superuser only... FIXME?
 # -w timeout option for BSD replaced by -t
+# -t timeout option for ping6 replaced by -h
 sub _ping_freebsd {
   my %args = @_;
-  my $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+
+  my $command;
+  if( _ip_is_ipv6( $args{ host } ) ) {
+      $command = "ping6 -c $args{count} -h $args{timeout} $args{host}";
+  } else {
+      $command = "ping -c $args{count} -t $args{timeout} $args{host}";
+  }
+
   return _ping_system($command, 0);
 }
 
@@ -246,8 +283,33 @@ sub _ping_cygwin {
     return _ping_win32(@_);
   }
   my %args = @_;
-  my $command = "ping $args{host} $args{size} $args{count}";
+  my $command = "ping";
+  if( _ip_is_ipv6( $args{host} ) ) {
+    $command .= "6";
+  }
+  $command .= " $args{host} $args{size} $args{count}";
   return _ping_system($command, 0);
+}
+
+sub _ip_is_ipv6 {
+  my $address = shift;
+
+  my $IPv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
+  my $G = "[0-9a-fA-F]{1,4}";
+
+  my @tail = ( ":",
+           "(:($G)?|$IPv4)",
+               ":($IPv4|$G(:$G)?|)",
+               "(:$IPv4|:$G(:$IPv4|(:$G){0,2})|:)",
+               "((:$G){0,2}(:$IPv4|(:$G){1,2})|:)",
+               "((:$G){0,3}(:$IPv4|(:$G){1,2})|:)",
+               "((:$G){0,4}(:$IPv4|(:$G){1,2})|:)" );
+  my $IPv6_re = $G;
+  $IPv6_re = "$G:($IPv6_re|$_)" for @tail;
+  $IPv6_re = qq/:(:$G){0,5}((:$G){1,2}|:$IPv4)|$IPv6_re/;
+  $IPv6_re =~ s/\(/(?:/g;
+  $IPv6_re = qr/$IPv6_re/;
+  $address =~ $IPv6_re;
 }
 
 1;

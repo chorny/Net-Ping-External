@@ -10,7 +10,7 @@ package Net::Ping::External;
 
 use 5.005;
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $DEBUG $DEBUG_OUTPUT $LAST_OUTPUT $LAST_EXIT_CODE);
+our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, $DEBUG, $DEBUG_OUTPUT, $LAST_OUTPUT, $LAST_EXIT_CODE);
 use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;

@@ -15,7 +15,7 @@ use Carp;
 use Socket qw(inet_ntoa);
 require Exporter;
 
-$VERSION = "0.15";
+$VERSION = "0.16";
 @ISA = qw(Exporter);
 @EXPORT = qw();
 @EXPORT_OK = qw(ping);
@@ -205,14 +205,17 @@ sub _ping_bsd {
   return _ping_system($command, 0);
 }
 
-# Debian 2.2 OK, RedHat 6.2 OK
+# Debian 2.2 OK, RedHat 6.2 OK (NOTE: tested before -w was added)
+# Fedora 29 OK (NOTE -e '/etc/redhat-release' is true there)
 # -s size option available to superuser... FIXME?
 sub _ping_linux {
   my %args = @_;
   my $command;
 #for next version
   if (-e '/etc/redhat-release' || -e '/etc/SuSE-release') {
-    $command = "ping -c $args{count} -s $args{size} $args{host}";
+    # enforce minimum timeout of 1 to prevent hanging (observed in Fedora 29)
+    $args{timeout} = 1 if $args{timeout} < 1;
+    $command = "ping -c $args{count} -s $args{size} -w $args{timeout} $args{host}";
   } else {
     $command = "ping -c $args{count} $args{host}";
   }
@@ -346,7 +349,10 @@ would like to ping.
 
 The maximum amount of time, in seconds, that C<ping()> will wait for a response.
 If the remote system does not respond before the timeout has elapsed, C<ping()>
-will return false.
+will return false.  Note that this option is not implemented in all systems, 
+which may cause ping to hang when there is no response (this would be a bug).
+In Linux, a minimum timeout of 1 is enforced (on terminal timeout<1 is treated 
+as no timeout).
 
 Default value: 5.
 
